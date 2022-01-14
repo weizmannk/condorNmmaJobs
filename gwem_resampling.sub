@@ -1,0 +1,13 @@
+universe = vanilla
+executable = /home/weizmann.kiendrebeogo/anaconda3/envs/nmma_setup/bin/gwem_resampling
+arguments = " --outdir ./rundir/$(macroeventID) --EMsamples /home/weizmann.kiendrebeogo/NMMA/GW_EM_joint/EMdata/outdir/$(macroeventID)/injection_Bu2019lm_posterior_samples.dat --GWsamples /home/weizmann.kiendrebeogo/NMMA/GW_EM_joint/GWdata/outdir/inj_PhD_posterior_samples_$(macroeventID).dat --EOS /home/weizmann.kiendrebeogo/GW_EM_joint/eos_sorted --nlive 8192 --GWprior /home/weizmann.kiendrebeogo/NMMA/GW_EM_joint/GWdata/aligned_spin.priors --EMprior /home/weizmann.kiendrebeogo/NMMA/GW_EM_joint/EM.prior --total-ejecta-mass --Neos 5000"
+
+request_memory = 4000
+getenv = true
+accounting_group_user = weizmann.kiendrebeogo
+accounting_group = ligo.sim.o4.cbc.explore.test
+log    = log/event$(macroeventID)-$(cluster)-$(process)-$(node).log
+error  = log/event$(macroeventID)-$(cluster)-$(process)-$(node).err
+output = log/event$(macroeventID)-$(cluster)-$(process)-$(node).out
+notification = never
+queue 1
