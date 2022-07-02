@@ -1,5 +1,5 @@
 #!/bin/bash
-source  /home/weizmann.kiendrebeogo/anaconda3/envs/nmma_setup/bin/activate 
+source  /home/weizmann.kiendrebeogo/anaconda3/envs/nmma/bin/activate 
 
 job=$1
 macroeventID=$1

@@ -1,0 +1,13 @@
+universe = vanilla
+executable = /home/weizmann.kiendrebeogo/anaconda3/envs/nmma/bin//home/weizmann.kiendrebeogo/anaconda3/envs/nmma/bin/light_curve_analysis 
+arguments = "--model $(model) --svd-path ./svdmodels --outdir ./outdir/$(bin_type)/$(n_inj)_$(exp)_$(seed) --label injection_$(model) --prior ./priors/$(prior) --tmin 0.1 --tmax 20 --dt 0.5 --error-budget 1 --nlive 512 --Ebv-max 0 --injection ./outdir/$(bin_type)/injection.json --injection-num $(n_inj) --injection-detection-limit 25.0,25.0,25.3 --injection-outfile ./outdir/$(bin_type)/$(n_inj)_$(exp)_$(seed)/lc.csv --generation-seed $(seed) --filters g,r,i --plot --remove-nondetections --ztf-uncertainties --ztf-sampling --ztf-ToO $(exp)"
+request_memory = 4000
+getenv = true
+accounting_group_user = weizmann.kiendrebeogo
+accounting_group = ligo.sim.o4.cbc.explore.test
+log    = log/event$(macroeventID)-$(cluster)-$(process)-$(node).log
+error  = log/event$(macroeventID)-$(cluster)-$(process)-$(node).err
+output = log/event$(macroeventID)-$(cluster)-$(process)-$(node).out
+notification = never
+queue 1
+
