@@ -5,9 +5,8 @@ request_memory = 4000
 getenv = true
 accounting_group_user = weizmann.kiendrebeogo
 accounting_group = ligo.sim.o4.cbc.explore.test
-log    = log/event$(macroeventID)-$(cluster)-$(process)-$(node).log
-error  = log/event$(macroeventID)-$(cluster)-$(process)-$(node).err
-output = log/event$(macroeventID)-$(cluster)-$(process)-$(node).out
+log    = log/event$(job)-$(cluster)-$(process)-$(node).log
+error  = log/event$(job)-$(cluster)-$(process)-$(node).err
+output = log/event$(job)-$(cluster)-$(process)-$(node).out
 notification = never
 queue 1
-
