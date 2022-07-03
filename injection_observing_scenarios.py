@@ -22,4 +22,10 @@ with open('injection_observing_scenarios.dag', 'w') as f:
                 f.write('VARS {0} n_inj="{1}"\n'.format(jobname, job))
                 job+=1
 
-            
+
+data = Table.read('injections.dat', format='ascii.fast_tab')
+In [4]: len(data)
+Out[4]: 1482
+
+In [5]: len(data[data['mass1']<data['mass2']])
+Out[5]: 723
