@@ -44,7 +44,7 @@ def main():
     parser.add_argument(
         "--prior",
         type=str,
-        required=,
+        required= True,
         help="The prior file from which to generate injections",
     )
     parser.add_argument(
@@ -293,44 +293,49 @@ def main():
         check_output(["which", "light_curve_analysis"]).decode().replace("\n", "")
     )
     
+    inject_file = (args.injection) 
     binary_type= binary_type_str[args.model]
-    prior_file = prior_str[binary_type]
+    prior_file = args.prior #prior_str[binary_type]
     
     seed_list = args.generation_seed
     exposure  = args.ztf_ToO
     injection_num     = args.injection_num 
-    
     number_jobs = injection_num*len(seed_list)*len(exposure)
-     
-    job_number = 0 
-    fid =  open(args.condor_dag_file, "w")
-    fid1 = open(args.bash_file, "w") 
     
+    job_number = 0 
+    
+    fid =  open(args.condor_dag_file, "w")
+    fid1 = open(args.bash_file, "w")
+     
     for ii in range(1, int(injection_num)+1):
         for exp in exposure:
             for seed  in seed_list:
+               
                 outdir = os.path.join(args.outdir, f"{binary_type}/{ii}_{exp}_{seed}".format())
                 if not os.path.isdir(outdir):
                     os.makedirs(outdir)
-                inject_file = (args.injection)
-                
+               
+                inject_outdir = os.path.join(args.outdir, f"{binary_type}/{ii}_{exp}_{seed}/lc.csv".format())
+                if not os.path.isdir(inject_outdir):
+                    os.makedirs(inject_outdir)
+            
                 fid.write("JOB %d %s\n" % (job_number, args.condor_sub_file))
                 fid.write("RETRY %d 3\n" % (job_number))
                 fid.write(
-                    'VARS %d jobNumber="%d" outdir="%s" inject_file="%s" \n'
-                    % (job_number, job_number, outdir, inject_file)
+                    'VARS %d jobNumber="%d" OUTDIR="%s" INJOUT="%s" INJNUM="%d"  EXPOSURE="%s" SEED="%d"\n'
+                    % (job_number, job_number, outdir, inject_outdir, ii, exp, seed)
                 )
                 fid.write("\n\n")
                 job_number = job_number + 1
                
                 if args.interpolation_type:
                     fid1.write(
-                        f"{light_curve_analysis} --model {args.model} --svd-path {args.svd_path} --interpolation_type {args.interpolation_type} --outdir {outdir} --label {args.label} --prior {prior_file} --tmin 0 --tmax 20 --dt 0.5 --error-budget 1 --nlive 512 --Ebv-max 0 --injection {inject_file} --injection-num {ii} --injection-detection-limit 25.0,25.0,25.3 --injection-outfile {outdir}/lc.csv --generation-seed {seed} --filters g,r,i --plot --remove-nondetections --ztf-uncertainties --ztf-sampling --ztf-ToO {exp}\n".format()
+                        f"{light_curve_analysis} --model {args.model} --svd-path {args.svd_path} --interpolation_type {args.interpolation_type} --outdir {outdir} --label {args.label} --prior {prior_file} --tmin 0 --tmax 20 --dt 0.5 --error-budget 1 --nlive 512 --Ebv-max 0 --injection {inject_file} --injection-num {ii} --injection-detection-limit 25.0,25.0,25.3 --injection-outfile {inject_outdir} --generation-seed {seed} --filters g,r,i --plot --remove-nondetections --ztf-uncertainties --ztf-sampling --ztf-ToO {exp}\n".format()
                     )
                      
                 else:
                     fid1.write(
-                        f"{lc_inference} --model {args.model} --svd-path {args.svd_path} --outdir {outdir} --label {args.label} --prior {prior_file} --tmin 0 --tmax 20 --dt 0.5 --error-budget 1 --nlive 512 --Ebv-max 0 --injection {inject_file} --injection-num {ii} --injection-detection-limit 25.0,25.0,25.3 --injection-outfile {outdir}/lc.csv --generation-seed {seed} --filters g,r,i --plot --remove-nondetections --ztf-uncertainties --ztf-sampling --ztf-ToO {exp}\n".format()
+                        f"{light_curve_analysis} --model {args.model} --svd-path {args.svd_path} --outdir {outdir} --label {args.label} --prior {prior_file} --tmin 0 --tmax 20 --dt 0.5 --error-budget 1 --nlive 512 --Ebv-max 0 --injection {inject_file} --injection-num {ii} --injection-detection-limit 25.0,25.0,25.3 --injection-outfile {inject_outdir} --generation-seed {seed} --filters g,r,i --plot --remove-nondetections --ztf-uncertainties --ztf-sampling --ztf-ToO {exp}\n".format()
                     )
     fid.close()
     fid1.close()
@@ -342,19 +347,19 @@ def main():
     
     if args.interpolation_type:
         fid.write(
-              f"arguments = --model $({args.model}) --svd-path $({args.svd_path}) --interpolation_type $({args.interpolation_type}) --outdir $({outdir}) --label $({args.label}) --prior $({prior_file}) --tmin 0 --tmax 20 --dt 0.5 --error-budget 1 --nlive 512 --Ebv-max 0 --injection $({inject_file}) --injection-num $({ii}) --injection-detection-limit 25.0,25.0,25.3 --injection-outfile $({outdir})/lc.csv --generation-seed $({seed}) --filters g,r,i --plot --remove-nondetections --ztf-uncertainties --ztf-sampling --ztf-ToO $({exp})\n".format()
+              f"arguments = --model {args.model} --svd-path {args.svd_path} --interpolation_type {args.interpolation_type} --outdir $(OUTDIR) --label {args.label} --prior {prior_file} --tmin 0 --tmax 20 --dt 0.5 --error-budget 1 --nlive 512 --Ebv-max 0 --injection {inject_file} --injection-num $(INJNUM) --injection-detection-limit 25.0,25.0,25.3 --injection-outfile $(INJOUT) --generation-seed $(SEED) --filters g,r,i --plot --remove-nondetections --ztf-uncertainties --ztf-sampling --ztf-ToO $(EXPOSURE)\n".format()
         ) 
     else:
         fid.write(
-            f"arguments = --model $({args.model}) --svd-path $({args.svd_path}) --outdir $({outdir}) --label $({args.label}) --prior $({prior_file}) --tmin 0 --tmax 20 --dt 0.5 --error-budget 1 --nlive 512 --Ebv-max 0 --injection $({inject_file}) --injection-num $({ii}) --injection-detection-limit 25.0,25.0,25.3 --injection-outfile $({outdir})/lc.csv --generation-seed $({seed}) --filters g,r,i --plot --remove-nondetections --ztf-uncertainties --ztf-sampling --ztf-ToO $({exp})\n".format()
-        )
+            f"arguments = --model {args.model} --svd-path {args.svd_path} --outdir $(OUTDIR) --label {args.label} --prior {prior_file} --tmin 0 --tmax 20 --dt 0.5 --error-budget 1 --nlive 512 --Ebv-max 0 --injection {inject_file} --injection-num $(INJNUM) --injection-detection-limit 25.0,25.0,25.3 --injection-outfile $(INJOUT) --generation-seed $(SEED) --filters g,r,i --plot --remove-nondetections --ztf-uncertainties --ztf-sampling --ztf-ToO $(EXPOSURE)\n".format()
+    )
     fid.write('requirements = OpSys == "LINUX"\n')
     fid.write("request_memory = 8192\n")
     fid.write("request_cpus = 1\n")
-    fid.write("accounting_group = ligo.dev.o2.burst.allsky.stamp\n")
+    fid.write("accounting_group = accounting_group = ligo.dev.o3.burst.allsky.stamp\n")
     fid.write("notification = nevers\n")
     fid.write("getenv = true\n")
-    fid.write("log = /local/%s/gwem_resampling.log\n" % os.environ["USER"])
+    fid.write("log = /local/%s/light_curve_analysis.log\n" % os.environ["USER"])
     fid.write("+MaxHours = 24\n")
     fid.write("universe = vanilla\n")
     fid.write("queue 1\n")
@@ -362,3 +367,4 @@ def main():
 
 if __name__ == "__main__":
    main() 
+
